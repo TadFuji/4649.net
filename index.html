@@ -5,10 +5,29 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>4649.net - よろしくねっ</title>
     <meta name="description" content="4649.net - よろしくねっ！日本語の語呂合わせで生まれたドメイン">
+    
+    <!-- OGP / Social Media -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://4649.net/">
+    <meta property="og:title" content="4649.net - よろしくねっ">
+    <meta property="og:description" content="よろしく（4649）の語呂合わせで生まれた、サイケデリックなデジタルアート空間。">
+    <meta property="og:image" content="https://4649.net/ogp.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content="https://4649.net/ogp.png">
+
+    <!-- Favicon -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌈</text></svg>">
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@700;900&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --rotate-speed-1: 8s;
+            --rotate-speed-2: 12s;
+            --bg-hue: 0deg;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -19,6 +38,8 @@
             width: 100%;
             height: 100%;
             overflow: hidden;
+            filter: hue-rotate(var(--bg-hue));
+            transition: filter 2s ease-in-out;
         }
 
         body {
@@ -57,7 +78,7 @@
                 #fb5607,
                 #ff006e
             );
-            animation: rotate 8s linear infinite;
+            animation: rotate var(--rotate-speed-1) linear infinite;
             opacity: 0.7;
         }
 
@@ -71,7 +92,7 @@
                 #00bbf9,
                 #00f5d4
             );
-            animation: rotate 12s linear infinite reverse;
+            animation: rotate var(--rotate-speed-2) linear infinite reverse;
             opacity: 0.5;
             mix-blend-mode: screen;
         }
@@ -272,30 +293,64 @@
     </div>
 
     <script>
-        // マウスフォロワー
+        // 設定
         const cursorGlow = document.getElementById('cursorGlow');
+        const root = document.documentElement;
+        
         let mouseX = 0, mouseY = 0;
+        let lastX = 0, lastY = 0;
         let currentX = 0, currentY = 0;
+        let velocity = 0;
+        let smoothVelocity = 0;
 
+        // マウス移動検知
         document.addEventListener('mousemove', (e) => {
             mouseX = e.clientX;
             mouseY = e.clientY;
         });
 
+        // 時間帯に応じた色の変化 (24時間で色相が1回転)
+        function updateTimeTheme() {
+            const now = new Date();
+            const minutesPassed = now.getHours() * 60 + now.getMinutes();
+            const hueShift = (minutesPassed / 1440) * 360;
+            root.style.setProperty('--bg-hue', `${hueShift}deg`);
+        }
+        updateTimeTheme();
+        setInterval(updateTimeTheme, 60000); // 1分ごとに更新
+
         function animate() {
-            // 滑らかな追従
+            // スムーズな追従
             currentX += (mouseX - currentX) * 0.08;
             currentY += (mouseY - currentY) * 0.08;
             
             cursorGlow.style.left = currentX + 'px';
             cursorGlow.style.top = currentY + 'px';
+
+            // 速度の計算
+            const dx = mouseX - lastX;
+            const dy = mouseY - lastY;
+            velocity = Math.sqrt(dx * dx + dy * dy);
+            
+            // 速度を滑らかにする
+            smoothVelocity += (velocity - smoothVelocity) * 0.05;
+            
+            // 速度に応じてアニメーション速度を変える (速い -> 秒数が短くなる)
+            const speed1 = Math.max(2, 8 - (smoothVelocity / 10)); 
+            const speed2 = Math.max(3, 12 - (smoothVelocity / 8));
+            
+            root.style.setProperty('--rotate-speed-1', `${speed1}s`);
+            root.style.setProperty('--rotate-speed-2', `${speed2}s`);
+
+            lastX = mouseX;
+            lastY = mouseY;
             
             requestAnimationFrame(animate);
         }
         animate();
 
-        // タッチデバイス用：タップでサブタイトル変更
-        const subtitles = ['よろしくねっ', 'ヨロシクネッ', 'YOROSHIKU', '✨'];
+        // タップ/クリックでサブタイトル変更
+        const subtitles = ['よろしくねっ', 'ヨロシクネッ', 'YOROSHIKU', '🌈', '4649.net', '✨'];
         let currentIndex = 0;
         const subtitleEl = document.querySelector('.subtitle');
 
